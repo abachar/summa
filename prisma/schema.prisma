@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model FiscalYear {
+  id       String   @id @default(cuid())
+  startsOn DateTime @map("starts_on")
+  endsOn   DateTime @map("ends_on")
+
+  @@unique([startsOn, endsOn], name: "unique_fiscal_year")
+  @@map("fiscal_years")
+}
+
+model Report {
+  id                   String                @id @default(cuid())
+  name                 String
+  approvedOn           DateTime?             @map("approved_on")
+  expenses             Expense[]
+  kilometricAllowances KilometricAllowance[]
+  reconciliations      Reconciliation[]
+
+  @@map("reports")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  reason      String
+  paidOn      DateTime @map("paid_on")
+  totalAmount Decimal  @map("total_amount")
+  taxAmount   Decimal? @map("tax_amount")
+  reportId    String   @map("report_id")
+  report      Report   @relation(fields: [reportId], references: [id])
+  supplierId  String   @map("supplier_id")
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
+
+  @@map("expenses")
+}
+
+model KilometricAllowance {
+  id          String  @id @default(cuid())
+  reason      String
+  departure   String
+  arrival     String
+  distance    Int
+  totalAmount Decimal @map("total_amount")
+  trips       Json
+  reportId    String  @map("report_id")
+  report      Report  @relation(fields: [reportId], references: [id])
+
+  @@map("kilometric_allowances")
+}
+
+model BankStatement {
+  id              String           @id @default(cuid())
+  name            String
+  postedOn        DateTime         @map("posted_on")
+  amount          Decimal
+  reconciliations Reconciliation[]
+
+  @@map("bank_statements")
+}
+
+model Reconciliation {
+  id              String        @id @default(cuid())
+  bankStatementId String        @map("bank_statement_id")
+  bankStatement   BankStatement @relation(fields: [bankStatementId], references: [id])
+  invoiceId       String?       @map("invoice_id")
+  invoice         Invoice?      @relation(fields: [invoiceId], references: [id])
+  reportId        String?       @map("report_id")
+  report          Report?       @relation(fields: [reportId], references: [id])
+  purchaseId      String?       @map("purchase_id")
+  purchaseI       Purchase?     @relation(fields: [purchaseId], references: [id])
+
+  @@map("reconciliations")
+}
+
+model Invoice {
+  id              String           @id @default(cuid())
+  idNumber        String           @unique @map("id_number")
+  name            String
+  billedOn        DateTime         @map("billed_on")
+  dueOn           DateTime         @map("due_on")
+  sentOn          DateTime?        @map("sent_on")
+  paidOn          DateTime?        @map("paid_on")
+  clientId        String           @map("client_id")
+  client          Client           @relation(fields: [clientId], references: [id])
+  recipientId     String           @map("recipient_id")
+  recipient       Contact          @relation(fields: [recipientId], references: [id])
+  products        Product[]
+  reconciliations Reconciliation[]
+
+  @@map("invoices")
+}
+
+model Product {
+  id        String  @id @default(cuid())
+  name      String
+  notes     String
+  quantity  Int
+  price     Decimal
+  unit      String
+  vatRate   String  @map("vat_rate")
+  invoiceId String  @map("invoice_id")
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@map("products")
+}
+
+model Client {
+  id             String    @id @default(cuid())
+  siret          String
+  vatNumber      String    @map("vat_number")
+  businessName   String    @map("business_name")
+  addressStreet  String    @map("address_street")
+  addressZipCode String    @map("address_zip_code")
+  addressCity    String    @map("address_city")
+  addressCountry String    @map("address_country")
+  invoices       Invoice[]
+  contacts       Contact[]
+
+  @@map("clients")
+}
+
+model Contact {
+  id       String    @id @default(cuid())
+  name     String
+  email    String
+  phone    String
+  clientId String    @map("client_id")
+  client   Client    @relation(fields: [clientId], references: [id])
+  invoices Invoice[]
+
+  @@map("contacts")
+}
+
+model Purchase {
+  id              String           @id @default(cuid())
+  reason          String
+  paidOn          DateTime         @map("paid_on")
+  totalAmount     Decimal          @map("total_amount")
+  taxAmount       Decimal?         @map("tax_amount")
+  supplierId      String           @map("supplier_idd")
+  supplier        Supplier         @relation(fields: [supplierId], references: [id])
+  reconciliations Reconciliation[]
+
+  @@map("purchases")
+}
+
+model Supplier {
+  id        String     @id @default(cuid())
+  name      String
+  purchases Purchase[]
+  expenses  Expense[]
+
+  @@map("suppliers")
+}

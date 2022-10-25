@@ -1,0 +1,20 @@
+{
+  "editor.fontFamily": "'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace",
+  "editor.fontLigatures": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.minimap.enabled": false,
+  "editor.codeActionsOnSave": ["source.formatDocument", "source.fixAll.eslint"],
+  "workbench.tree.indent": 20,
+  "css.lint.unknownAtRules": "ignore",
+  "cSpell.language": "en,fr",
+  "cSpell.words": ["crafters", "nearley", "postgrest", "prisma", "siret", "supabase", "windi", "windicss"],
+  "files.watcherExclude": {
+    ".git/**": true,
+    "node_modules/**": true
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  }
+}
